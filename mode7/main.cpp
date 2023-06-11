@@ -216,6 +216,8 @@ void Game::render()
 		r.w = W * pxs;
 		r.h = H * pxs;
 		SDL_RenderCopy(m_pRenderer, scr, NULL, &r);
+
+		AssetsManager::Instance()->draw("bg", 0, 0, m_gameWidth, 400, m_pRenderer);
 	}
 
 	if (state == END_GAME)
