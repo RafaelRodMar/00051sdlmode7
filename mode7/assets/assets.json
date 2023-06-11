@@ -1,0 +1,9 @@
+{
+    "fnt": {
+        "font": "sansation.ttf"
+    },
+    "img": {
+        "background": "background.png",
+	"bg" : "bg.png"
+    }
+}
