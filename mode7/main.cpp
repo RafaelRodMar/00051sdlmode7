@@ -39,6 +39,9 @@ public:
 //la clase juego:
 Game* Game::s_pInstance = 0;
 
+//Takes a camera object, a floating - point value v, and performs perspective projection 
+//calculations on a line defined by points a and b based on the camera's near and far planes.
+//The resulting projected line is then returned.
 Line Game::getProjected(Camera & c, float v)
 {
 	Line ret;
@@ -58,6 +61,11 @@ Line Game::getProjected(Camera & c, float v)
 	return ret;
 }
 
+//Takes a floating - point value u and a line defined by points a and b,
+//and calculates the texture coordinates at the interpolated position along 
+//the line using linear interpolation.The resulting texture coordinates are 
+//wrapped or clamped within the range of the texture dimensions and returned
+//as a Vector2D object.
 Vector2D Game::getTexCoords(float u, Line & line)
 {
 	Vector2D inter;
@@ -186,6 +194,11 @@ void Game::render()
 
 	if (state == GAME)
 	{
+		/*The overall process involve projecting a line in the 3D scene 
+		using the camera, and then for each pixel in the desired buffer,
+		determining the corresponding texture coordinate and retrieving 
+		the pixel value from the texture data.The retrieved pixel values 
+		are stored in the buffer for further processing or display.*/
 		int* tdata = (int*)tex->pixels;
 		for (int y = 0; y < H; y++) {
 			float v = 1.f - ((float)y / (float)H);
