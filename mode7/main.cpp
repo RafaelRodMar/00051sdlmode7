@@ -82,6 +82,22 @@ Vector2D Game::getTexCoords(float u, Line & line)
 	return ret;
 }
 
+Vector2D Game::getTexCoords2(float u, Line & line)
+{
+	Vector2D inter;
+	inter.m_x = line.a.m_x + u * (line.b.m_x - line.a.m_x);
+	inter.m_y = line.a.m_y + u * (line.b.m_y - line.a.m_y);
+
+	Vector2D ret;
+	ret.m_x = inter.m_x;
+	ret.m_y = -inter.m_y;
+
+	ret.m_x = (skyW + ((int)ret.m_x % skyW)) % skyW;
+	ret.m_y = (skyH + ((int)ret.m_y % skyH)) % skyH;
+
+	return ret;
+}
+
 Game::Game()
 {
 	m_pRenderer = NULL;
@@ -170,6 +186,11 @@ bool Game::init(const char* title, int xpos, int ypos, int width,
 	SDL_FreeSurface(sur);
 	scr = SDL_CreateTexture(m_pRenderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, W, H);
 
+	surSky = SDL_LoadBMP("assets//img//sky.bmp");
+	texSky = SDL_ConvertSurfaceFormat(surSky, SDL_PIXELFORMAT_RGBA32, 0);
+	SDL_FreeSurface(surSky);
+	scrSky = SDL_CreateTexture(m_pRenderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, W, H);
+
 	//camera
 	c.pos.m_x = 150;
 	c.pos.m_y = 150;
@@ -178,7 +199,8 @@ bool Game::init(const char* title, int xpos, int ypos, int width,
 
 	textureW = tex->w;
 	textureH = tex->h;
-	std::cout << "texture dimensions: " << textureW << "," << textureH << std::endl;
+	skyW = texSky->w;
+	skyH = texSky->h;
 
 	return true;
 }
@@ -217,7 +239,26 @@ void Game::render()
 		r.h = H * pxs;
 		SDL_RenderCopy(m_pRenderer, scr, NULL, &r);
 
-		AssetsManager::Instance()->draw("bg", 0, 0, m_gameWidth, 400, m_pRenderer);
+		///////sky
+		int* tdata2 = (int*)texSky->pixels;
+		for (int y = 0; y < H; y++) {
+			float v = 1.f - ((float)y / (float)H);
+			Line inter = getProjected(c, v);
+			for (int x = 0; x < W; x++) {
+				float u = (float)x / (float)W;
+				Vector2D coord = getTexCoords2(u, inter);
+				//cout << H << "-" << y << endl;
+				buffSky[H-y-1][x] = tdata2[(int)(coord.m_y * (texSky->pitch / 4) + coord.m_x)];
+			}
+		}
+		SDL_UpdateTexture(scrSky, NULL, buffSky, W * 4);
+		r.x = 0;
+		r.y = 0;
+		r.w = W * pxs;
+		r.h = H * pxs;
+		SDL_RenderCopy(m_pRenderer, scrSky, NULL, &r);
+
+		//AssetsManager::Instance()->draw("bg", 0, 0, m_gameWidth, 400, m_pRenderer);
 	}
 
 	if (state == END_GAME)
@@ -235,7 +276,9 @@ void Game::quit()
 void Game::clean()
 {
 	SDL_FreeSurface(tex);
+	SDL_FreeSurface(texSky);
 	SDL_DestroyTexture(scr);
+	SDL_DestroyTexture(scrSky);
 	std::cout << "cleaning game\n";
 	InputHandler::Instance()->clean();
 	AssetsManager::Instance()->clearFonts();

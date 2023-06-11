@@ -94,6 +94,7 @@ public:
 	int getGameHeight() const { return m_gameHeight; }
 	Line getProjected(Camera& c, float v);
 	Vector2D getTexCoords(float u, Line& line);
+	Vector2D getTexCoords2(float u, Line& line);
 
 private:
 	Game();
@@ -107,11 +108,19 @@ private:
 	int cellSize = 20;
 
 	Camera c;
+	//terrain
 	int buff[H][W]; //size of the window
 	int textureW, textureH;
 	SDL_Surface* sur;
 	SDL_Surface* tex;
 	SDL_Texture* scr;
+
+	//sky
+	int buffSky[H][W];
+	int skyW, skyH;
+	SDL_Surface* surSky;
+	SDL_Surface* texSky;
+	SDL_Texture* scrSky;
 
 	std::list<Entity*> entities;
 	bool isCollide(Entity *a, Entity *b);
