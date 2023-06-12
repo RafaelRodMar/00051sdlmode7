@@ -31,11 +31,13 @@ struct Line {
 struct Camera {
 public:
 	Vector2D pos;
-	float dir;
+	float dir;  //angle
 	float znear, zfar;
 	Line near, far;
-	float h;
+	float h;  //height
+	float speed = 3.0f;
 	
+	//get the point from the camera position and at an angle
 	Vector2D transformPoint(Vector2D& p) {
 		Vector2D ret;
 		ret.m_x = pos.m_x + p.m_x * cosf(dir * DTR) - p.m_y * sinf(dir * DTR);
@@ -43,23 +45,26 @@ public:
 		return ret;
 	}
 
+	//calculate the 4 points of the frustum
+	//from -h to h is the near line
+	//from -h*20 to h*20 is the far line
 	void update() {
 		znear = h;
-		near.a.m_x = -znear;
+		near.a.m_x = -znear; //left near point
 		near.a.m_y = znear;
 		near.a = transformPoint(near.a);
 
-		near.b.m_x = znear;
+		near.b.m_x = znear;  //right near point
 		near.b.m_y = znear;
 		near.b = transformPoint(near.b);
 
 		zfar = h * 20;
 
-		far.a.m_x = -zfar;
+		far.a.m_x = -zfar;  //left far point
 		far.a.m_y = zfar;
 		far.a = transformPoint(far.a);
 
-		far.b.m_x = zfar;
+		far.b.m_x = zfar;  //right far point
 		far.b.m_y = zfar;
 		far.b = transformPoint(far.b);
 	}

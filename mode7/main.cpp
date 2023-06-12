@@ -45,8 +45,8 @@ Game* Game::s_pInstance = 0;
 Line Game::getProjected(Camera & c, float v)
 {
 	Line ret;
-	float in = 1.f / c.znear;
-	float ifar = 1.f / c.zfar;
+	float in = 1.f / c.znear;  //near ratio
+	float ifar = 1.f / c.zfar; //far ratio
 	float iz = in + v * (ifar - in);
 	ret.a.m_x = c.near.a.m_x * in + v * (c.far.a.m_x * ifar - c.near.a.m_x * in);
 	ret.a.m_y = c.near.a.m_y * in + v * (c.far.a.m_y * ifar - c.near.a.m_y * in);
@@ -221,13 +221,15 @@ void Game::render()
 		determining the corresponding texture coordinate and retrieving 
 		the pixel value from the texture data.The retrieved pixel values 
 		are stored in the buffer for further processing or display.*/
-		int* tdata = (int*)tex->pixels;
+
+		//v and u are the interpolated points of the texture between 0.0f and 1.0f
+		int* tdata = (int*)tex->pixels;  //tdata is a pointer to the pixels of the surface.
 		for (int y = 0; y < H; y++) {
 			float v = 1.f - ((float)y / (float)H);
-			Line inter = getProjected(c, v);
+			Line inter = getProjected(c, v);  //get the horizontal line at v distance from camera.
 			for (int x = 0; x < W; x++) {
 				float u = (float)x / (float)W;
-				Vector2D coord = getTexCoords(u, inter);
+				Vector2D coord = getTexCoords(u, inter); //get the coords of the u,v pixel in the line.
 				buff[y][x] = tdata[(int)(coord.m_y * (tex->pitch / 4) + coord.m_x)];
 			}
 		}
@@ -301,21 +303,22 @@ void Game::handleEvents()
 	if (state == GAME)
 	{
 		bool recalculate = false;
-		if (InputHandler::Instance()->isKeyDown(SDL_SCANCODE_W)) c.h += 0.5f;
+		if (InputHandler::Instance()->isKeyDown(SDL_SCANCODE_W)) c.h += 0.5f; //change height
 		if (InputHandler::Instance()->isKeyDown(SDL_SCANCODE_S)) c.h -= 0.5f;
-		if (InputHandler::Instance()->isKeyDown(SDL_SCANCODE_LEFT)) c.dir += 2.f;
+		if (InputHandler::Instance()->isKeyDown(SDL_SCANCODE_LEFT)) c.dir += 2.f; //rotate
 		if (InputHandler::Instance()->isKeyDown(SDL_SCANCODE_RIGHT)) c.dir -= 2.f;
 		if (InputHandler::Instance()->isKeyDown(SDL_SCANCODE_UP))
 		{
-			c.pos.m_y += cosf(c.dir * DTR) * 3;
-			c.pos.m_x -= sinf(c.dir * DTR) * 3;
+			c.pos.m_y += cosf(c.dir * DTR) * c.speed;  //move forward
+			c.pos.m_x -= sinf(c.dir * DTR) * c.speed;
 		}
 		if (InputHandler::Instance()->isKeyDown(SDL_SCANCODE_DOWN))
 		{
-			c.pos.m_y -= cosf(c.dir * DTR) * 3;
-			c.pos.m_x += sinf(c.dir * DTR) * 3;
+			c.pos.m_y -= cosf(c.dir * DTR) * c.speed;  //move backward
+			c.pos.m_x += sinf(c.dir * DTR) * c.speed;
 		}
 
+		//camera update
 		c.update();
 	}
 
